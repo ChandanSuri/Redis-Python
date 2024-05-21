@@ -11,7 +11,7 @@ def main():
     connection, _ = server_socket.accept() # wait for client
 
     # We are sending 2 commands with the same connection.
-    for _ in range(2):
+    while True:
         with connection:
             request = connection.recv(1024)
             data = request.decode()
