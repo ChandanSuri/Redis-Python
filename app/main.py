@@ -1,37 +1,52 @@
 import socket
-import threading
+import os
+from threading import *
 
-def handle_connection(connection, addr):
-    pong = "+PONG\r\n"
+class Connection(Thread):
+    def __init__(self, socket, address):
+        super().__init__()
+        self.socket = socket
+        self.address = address
+        self.start()
 
-    # We are sending 2 commands with the same connection.
-    while True:
-        request = connection.recv(1024)
-        if not request:
-            break
+    def run(self):
+        while True:
+            request = self.socket.recv(1024)
+            if not request:
+                break
+            
+            parsedReq = self.parseReq(request)
+            self.parseCommandAndSendRequest(parsedReq)
 
-        data = request.decode()
-        # PING should be received and then we send our encoded packet with data.
-        if "ping" in data.lower():
-            connection.send(pong.encode())
+        self.close()
 
-    connection.close()
+    def parseReq(self, request):
+        requestParams = request.decode().split("\r\n")
+        return requestParams[2:-1:2]
 
+    def parseCommandAndSendRequest(self, request):
+        lowercaseRequest = request[0].lower()
+
+        if "ping" in lowercaseRequest:
+            dataToSend = "+PONG\r\n".encode()
+        elif "echo" in lowercaseRequest:
+            dataToSend = f"+{request[1]}\r\n".encode()
+        else:
+            return
+        
+        self.socket.send(dataToSend)
+    
 def main():
     # You can use print statements as follows for debugging, they'll be visible when running tests.
     print("Logs from your program will appear here!")
 
-    server_socket = socket.create_server(("localhost", 6379), reuse_port=True)
+    serverSocket = socket.create_server(("localhost", 6379), reuse_port=True)
 
     while True:
         # Wait for client
-        client_socket, client_address = server_socket.accept() 
-        print("Received a connection from client: {client_address}")
-        
-        threading.Thread(
-            target=handle_connection, 
-            args=[client_socket, client_address]
-        ).start()
+        clientSocket, clientAddress = serverSocket.accept() 
+        print("Received a connection from client: {clientAddress}")
+        Connection(clientSocket, clientAddress)
 
 if __name__ == "__main__":
     main()
