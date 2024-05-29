@@ -34,7 +34,7 @@ class Connection(Thread):
         elif "set" == requestCommand:
             dataToSend = "+OK\r\n"
         elif "get" == requestCommand:
-            dataToSend = f"+{request[1]}\r\n"
+            dataToSend = f"+{request[-1]}\r\n"
         else:
             return
         
