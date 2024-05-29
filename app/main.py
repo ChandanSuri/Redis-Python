@@ -30,11 +30,11 @@ class Connection(Thread):
         if "ping" == requestCommand:
             dataToSend = "+PONG\r\n"
         elif "echo" == requestCommand:
-            dataToSend = f"+{request[-1]}\r\n"
+            dataToSend = f"+{request[-2]}\r\n"
         elif "set" == requestCommand:
             dataToSend = "+OK\r\n"
         elif "get" == requestCommand:
-            dataToSend = f"+{request[-1]}\r\n"
+            dataToSend = f"+{request[-2]}\r\n"
         else:
             return
         
