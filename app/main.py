@@ -22,19 +22,23 @@ class Connection(Thread):
 
     def parseReq(self, request):
         requestParams = request.decode().split("\r\n")
-        return requestParams[2:-1:2]
+        return requestParams
 
     def parseCommandAndSendRequest(self, request):
-        lowercaseRequest = request[0].lower()
+        requestCommand = request.lower()[2]
 
-        if "ping" in lowercaseRequest:
-            dataToSend = "+PONG\r\n".encode()
-        elif "echo" in lowercaseRequest:
-            dataToSend = f"+{request[1]}\r\n".encode()
+        if "ping" == requestCommand:
+            dataToSend = "+PONG\r\n"
+        elif "echo" == requestCommand:
+            dataToSend = f"+{request[-1]}\r\n"
+        elif "set" == requestCommand:
+            dataToSend = "+OK\r\n"
+        elif "get" == requestCommand:
+            dataToSend = f"+{request[1]}\r\n"
         else:
             return
         
-        self.socket.send(dataToSend)
+        self.socket.send(dataToSend.encode())
     
 def main():
     # You can use print statements as follows for debugging, they'll be visible when running tests.
