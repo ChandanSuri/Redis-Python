@@ -25,7 +25,7 @@ class Connection(Thread):
         return requestParams
 
     def parseCommandAndSendRequest(self, request):
-        requestCommand = request.lower()[2]
+        requestCommand = request[2].lower()
 
         if "ping" == requestCommand:
             dataToSend = "+PONG\r\n"
