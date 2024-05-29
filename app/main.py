@@ -32,8 +32,12 @@ class Connection(Thread):
         elif "echo" == requestCommand:
             dataToSend = f"+{request[-2]}\r\n"
         elif "set" == requestCommand:
+            print("1st")
+            print(request)
             dataToSend = "+OK\r\n"
         elif "get" == requestCommand:
+            print("2nd")
+            print(request)
             dataToSend = f"+{request[-2]}\r\n"
         else:
             return
