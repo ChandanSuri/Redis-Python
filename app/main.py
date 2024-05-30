@@ -94,7 +94,13 @@ class Connection(Thread):
         elif requestCommand == Command.INFO:
             subCommand = request[4].lower()
             if subCommand == "replication":
-                dataToSend = f"${5 + len(role.value)}\r\nrole:{role.value}\r\n"
+                if role == ServerRole.MASTER:
+                    payload = "role:master\n" + \
+                        "master_replid:8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb\n" + \
+                        "master_repl_offset:0"
+                    dataToSend = f"${len(payload)}\r\n{payload}\r\n"
+                else:
+                    dataToSend = f"$10\r\nrole:slave\r\n"
             else:
                 dataToSend = f"$-1\r\n"
         else:
@@ -117,7 +123,7 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=6379)
     parser.add_argument("--replicaof", type=str)
     args = parser.parse_args()
-    
+
     role = ServerRole.SLAVE if args.replicaof else ServerRole.MASTER
 
     main()
