@@ -47,7 +47,7 @@ class Connection(Thread):
             parsedReq = self.parseReq(request)
             self.parseCommandAndSendRequest(parsedReq)
 
-        self.close()
+        self.socket.close()
 
     def parseReq(self, request):
         requestParams = request.decode().split("\r\n")
