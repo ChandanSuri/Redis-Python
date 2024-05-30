@@ -2,6 +2,13 @@ import socket
 import os
 import time
 from threading import *
+from enum import Enum
+
+class Command(str, Enum):
+    PING = "ping",
+    ECHO = "echo",
+    SET = "set",
+    GET = "get"
 
 class Database:
     def __init__(self):
@@ -56,11 +63,11 @@ class Connection(Thread):
     def parseCommandAndSendRequest(self, request):
         requestCommand = request[2].lower()
 
-        if "ping" == requestCommand:
+        if requestCommand == Command.PING:
             dataToSend = "+PONG\r\n"
-        elif "echo" == requestCommand:
+        elif requestCommand == Command.ECHO:
             dataToSend = f"+{request[-2]}\r\n"
-        elif "set" == requestCommand:
+        elif requestCommand == Command.SET:
             key, value = request[4], request[6]
             self.database.add(key, value)
 
@@ -70,7 +77,7 @@ class Connection(Thread):
                 self.database.deleteDataExpiry(key)
 
             dataToSend = "+OK\r\n"
-        elif "get" == requestCommand:
+        elif requestCommand == Command.GET:
             key = request[4]
             dataExpiryTime = self.database.getDataExpiry(key)
             if dataExpiryTime != -1 and time.time() > dataExpiryTime:
@@ -94,6 +101,7 @@ def main():
         clientSocket, clientAddress = serverSocket.accept() 
         print("Received a connection from client: {clientAddress}")
         Connection(clientSocket, clientAddress)
+
 
 if __name__ == "__main__":
     main()
