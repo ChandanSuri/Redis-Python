@@ -77,7 +77,7 @@ class Connection(Thread):
                 dataToSend = f"$-1\r\n"
             else:
                 value = self.database.get(key)
-                dataToSend = f"${value}\r\n"
+                dataToSend = f"+{value}\r\n"
         else:
             return
         
