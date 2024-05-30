@@ -9,7 +9,8 @@ class Command(str, Enum):
     PING = "ping",
     ECHO = "echo",
     SET = "set",
-    GET = "get"
+    GET = "get",
+    INFO = "info"
 
 class Database:
     def __init__(self):
@@ -86,6 +87,12 @@ class Connection(Thread):
             else:
                 value = self.database.get(key)
                 dataToSend = f"+{value}\r\n"
+        elif requestCommand == Command.INFO:
+            subCommand = request[4].lower()
+            if subCommand == "replication":
+                dataToSend = f"$11\r\nrole:master\r\n"
+            else:
+                dataToSend = f"$-1\r\n"
         else:
             return
         
