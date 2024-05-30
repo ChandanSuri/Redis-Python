@@ -1,10 +1,12 @@
 import socket
 import os
+import time
 from threading import *
 
 class Database:
     def __init__(self):
         self.data = {}
+        self.expiryTimes = {}
 
     def add(self, key, value):
         self.data[key] = value
@@ -14,6 +16,19 @@ class Database:
             return -1
         
         return self.data[key]
+    
+    def updateExpiryTime(self, key, expiryTime):
+        self.expiryTimes[key] = expiryTime
+
+    def getDataExpiry(self, key):
+        if key not in self.expiryTimes:
+            return -1
+        
+        return self.expiryTimes[key]
+    
+    def deleteDataExpiry(self, key):
+        if key in self.expiryTimes:
+            del self.expiryTimes[key]
     
 class Connection(Thread):
     def __init__(self, socket, address):
@@ -46,11 +61,23 @@ class Connection(Thread):
         elif "echo" == requestCommand:
             dataToSend = f"+{request[-2]}\r\n"
         elif "set" == requestCommand:
-            self.database.add(request[4], request[6])
+            key, value = request[4], request[6]
+            self.database.add(key, value)
+
+            if len(request) > 8 and request[8].upper() == "PX":
+                self.database.updateExpiryTime(key, time.time() + float(request[10]) / 1000)
+            else:
+                self.database.deleteDataExpiry(key)
+
             dataToSend = "+OK\r\n"
         elif "get" == requestCommand:
-            value = self.database.get(request[-2])
-            dataToSend = f"+{value}\r\n"
+            key = request[4]
+            dataExpiryTime = self.database.getDataExpiry(key)
+            if dataExpiryTime != -1 and time.time() > dataExpiryTime:
+                dataToSend = f"$-1\r\n"
+            else:
+                value = self.database.get(key)
+                dataToSend = f"${value}\r\n"
         else:
             return
         
