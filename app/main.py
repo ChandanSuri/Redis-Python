@@ -5,11 +5,15 @@ from threading import *
 from enum import Enum
 from argparse import ArgumentParser
 
+class ServerRole(str, Enum):
+    MASTER = "master"
+    SLAVE = "slave"
+
 class Command(str, Enum):
-    PING = "ping",
-    ECHO = "echo",
-    SET = "set",
-    GET = "get",
+    PING = "ping"
+    ECHO = "echo"
+    SET = "set"
+    GET = "get"
     INFO = "info"
 
 class Database:
@@ -90,7 +94,7 @@ class Connection(Thread):
         elif requestCommand == Command.INFO:
             subCommand = request[4].lower()
             if subCommand == "replication":
-                dataToSend = f"$11\r\nrole:master\r\n"
+                dataToSend = f"${5 + len(role.value)}\r\nrole:{role.value}\r\n"
             else:
                 dataToSend = f"$-1\r\n"
         else:
@@ -99,9 +103,7 @@ class Connection(Thread):
         self.socket.send(dataToSend.encode())
     
 def main():
-    parser = ArgumentParser("Redis Server Using Python!!!")
-    parser.add_argument("--port", type=int, default=6379)
-    serverSocket = socket.create_server(("localhost", parser.parse_args().port), reuse_port=True)
+    serverSocket = socket.create_server(("localhost", args.port), reuse_port=True)
 
     while True:
         # Wait for client
@@ -111,4 +113,11 @@ def main():
 
 
 if __name__ == "__main__":
+    parser = ArgumentParser("Redis Server Using Python!!!")
+    parser.add_argument("--port", type=int, default=6379)
+    parser.add_argument("--replicaof", type=str)
+    args = parser.parse_args()
+    
+    role = ServerRole.SLAVE if args.replicaof else ServerRole.MASTER
+
     main()
