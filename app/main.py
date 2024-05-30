@@ -2,11 +2,25 @@ import socket
 import os
 from threading import *
 
+class Database:
+    def __init__(self):
+        self.data = {}
+
+    def add(self, key, value):
+        self.data[key] = value
+
+    def get(self, key):
+        if key not in self.data:
+            return -1
+        
+        return self.data[key]
+    
 class Connection(Thread):
     def __init__(self, socket, address):
         super().__init__()
         self.socket = socket
         self.address = address
+        self.database = Database()
         self.start()
 
     def run(self):
@@ -32,13 +46,11 @@ class Connection(Thread):
         elif "echo" == requestCommand:
             dataToSend = f"+{request[-2]}\r\n"
         elif "set" == requestCommand:
-            print("1st")
-            print(request)
+            self.database.add(request[4], request[6])
             dataToSend = "+OK\r\n"
         elif "get" == requestCommand:
-            print("2nd")
-            print(request)
-            dataToSend = f"+{request[-2]}\r\n"
+            value = self.database.get(request[-2])
+            dataToSend = f"+{value}\r\n"
         else:
             return
         
