@@ -3,6 +3,7 @@ import os
 import time
 from threading import *
 from enum import Enum
+from argparse import ArgumentParser
 
 class Command(str, Enum):
     PING = "ping",
@@ -91,10 +92,9 @@ class Connection(Thread):
         self.socket.send(dataToSend.encode())
     
 def main():
-    # You can use print statements as follows for debugging, they'll be visible when running tests.
-    print("Logs from your program will appear here!")
-
-    serverSocket = socket.create_server(("localhost", 6379), reuse_port=True)
+    parser = ArgumentParser("Redis Server Using Python!!!")
+    parser.add_argument("--port", type=int, default=6379)
+    serverSocket = socket.create_server(("localhost", parser.parse_args().port), reuse_port=True)
 
     while True:
         # Wait for client
